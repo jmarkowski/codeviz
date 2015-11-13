@@ -31,7 +31,10 @@ class Node():
 
     @staticmethod
     def get_name(filename):
-        return re.sub('(-|\.)','', filename)
+        name = re.sub('(-|\.)','', filename)
+        if name[0].isdigit():
+            name = 'x' + name
+        return name
 
 
 class Edge():
