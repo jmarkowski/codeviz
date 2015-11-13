@@ -46,6 +46,7 @@ class Edge():
 def bash_cmd(cmd):
     retcode = RetCode.OK
 
+    print(cmd)
     try:
         out_bytes = subprocess.check_output(cmd.split())
     except subprocess.CalledProcessError as e:
@@ -80,14 +81,16 @@ def gen_dot_file(nodes, edges):
         #f.write('graph codemap {\n')
         f.write('digraph codemap {\n')
         f.write('    splines=true\n') # use splines for arrows
-        f.write('    sep="+25,25"\n') # min 25 points of margin
-        f.write('    overlap=scalexy\n') # scale graph in x/y to remove overlap
+        f.write('    sep="+15,15"\n') # min 25 points of margin
+        f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
+        f.write('    node [shape=ellipse, fontsize=10]\n\n')
         #f.write('    ranksep=3\n')
         #f.write('    ratio=auto\n')
         #f.write('   node [shape=box, style=filled]\n')
         for n in nodes:
             f.write('    {} [label = "{}"]\n'.format(n.name, n.filename))
 
+        f.write('\n')
         for e in edges:
             f.write('    {} -> {}\n'.format(e.start, e.end))
         f.write('}')
