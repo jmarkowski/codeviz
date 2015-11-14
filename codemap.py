@@ -31,6 +31,10 @@ class Node():
 
         return includes
 
+    def __str__(self):
+        s = '{:<20s}-> {}'.format(self.filename, ', '.join(self.includes))
+        return s
+
     @staticmethod
     def get_name(filename):
         name = re.sub('(-|\.)','', filename)
@@ -45,10 +49,15 @@ class Edge():
         self.end = end_node.name
 
 
+def printVerbose(string):
+    if args.verbose:
+        print(string)
+
+
 def bash_cmd(cmd):
     retcode = RetCode.OK
 
-    print(cmd)
+    printVerbose('{:<20s} : {}'.format('command', cmd))
     try:
         out_bytes = subprocess.check_output(cmd.split())
     except subprocess.CalledProcessError as e:
@@ -70,22 +79,23 @@ def find_node(nodes, filename):
 def get_edges(nodes):
     edges = []
     for start_node in nodes:
-        for inc in start_node.includes:
-            end_node = find_node(nodes, inc)
+        for include_file in start_node.includes:
+            end_node = find_node(nodes, include_file)
             if end_node:
                 edges.append(Edge(start_node, end_node))
     return edges
 
 
 def gen_dot_file(nodes, edges):
+    filename = '.'.join(args.outfile.split('.')[:-1])
 
-    with open('codemap.dot', 'wt', encoding='utf-8') as f:
+    with open('{}.dot'.format(filename), 'wt', encoding='utf-8') as f:
         #f.write('graph codemap {\n')
         f.write('digraph codemap {\n')
         f.write('    splines=true\n') # use splines for arrows
         f.write('    sep="+15,15"\n') # min 25 points of margin
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
-        f.write('    node [shape=ellipse, fontsize=10]\n\n')
+        f.write('    node [shape=Mrecord, fontsize=12]\n\n')
         #f.write('    ranksep=3\n')
         #f.write('    ratio=auto\n')
         #f.write('   node [shape=box, style=filled]\n')
@@ -100,28 +110,28 @@ def gen_dot_file(nodes, edges):
 
 def gen_graphic():
     #cmd = 'dot -Tpng codemap.dot -o codemap.png'
+    filename = '.'.join(args.outfile.split('.')[:-1])
+    fileext  = args.outfile.split('.')[-1]
 
-    cmd = 'dot codemap.dot'
+    cmd = 'dot {}.dot'.format(filename)
 
-    bash_cmd(cmd)
-    file_ext = args.outfile.split('.')[-1]
+    (out_text, retcode) = bash_cmd(cmd)
 
-    cmd = 'neato -Gstart=5 codemap.dot -T{} -o {}' \
-                                                 .format(file_ext, args.outfile)
+    if retcode:
+        return retcode
+
+    cmd = 'neato -Gstart=5 {}.dot -T{} -o {}' \
+                                        .format(filename, fileext, args.outfile)
 
     (out_text, retcode) = bash_cmd(cmd)
 
     if out_text:
-        print(out_text)
+        printVerbose(out_text)
 
     return retcode
 
 
 def parse_arguments():
-    '''
-    Hypothetical command-line tool for searching a collection of
-    files for one or more text patterns.
-    '''
     global args
 
     parser = argparse.ArgumentParser(
@@ -132,26 +142,25 @@ def parse_arguments():
         metavar='filename',
         nargs='*')
 
-    # todo
-    parser.add_argument('-v',
+    parser.add_argument('-v', '--verbose',
         dest='verbose',
-        action='store_false',
+        action='store_true',
         help='verbose mode')
 
-    parser.add_argument('-o',
+    parser.add_argument('-o', '--outfile',
         dest='outfile',
         action='store',
-        default='codemap.ps',
+        default='codemap.png',
         help='output filename')
 
     # todo
-    parser.add_argument('-r',
-        dest='recursive',
-        action='store_true',
-        help='recursive scan of .c and .h files')
+    # parser.add_argument('-r',
+    #     dest='recursive',
+    #     action='store_true',
+    #     help='recursive scan of .c and .h files')
 
-    parser.add_argument('-c',
-        dest='connect_only',
+    parser.add_argument('-c', '--connected',
+        dest='connected',
         action='store_true',
         help='only graph nodes that have connections')
 
@@ -171,13 +180,15 @@ def main():
         h_files = [f for f in os.listdir(os.getcwd()) if f.endswith('.h')]
 
     files = c_files + h_files
+    files.sort()
 
     nodes = []
 
     for f in files:
         n = Node(f)
+        printVerbose(n)
 
-        if args.connect_only:
+        if args.connected:
             if not n.includes or not [x for x in n.includes if x in files]:
                 print('{} has no includes'.format(n.filename))
                 continue
@@ -195,6 +206,7 @@ def main():
 
 if __name__ == '__main__':
     try:
-        main()
+        retcode = main()
+        sys.exit(retcode)
     except KeyboardInterrupt as e:
         print('\nAborting')
