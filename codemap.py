@@ -19,13 +19,15 @@ class Node():
         self.includes = self.get_includes(filename)
 
     def get_includes(self, filename):
-        regexp = re.compile(r'#include ["<](?P<file>[\w\.]+)[">]')
-        includes = []
+        includes_re = re.compile(r'#include[\s]?["<]+(?P<file>[\w\.]+)[">]+')
+
         with open(filename, 'rt') as f:
-            for line in f:
-                result = regexp.search(line)
-                if result:
-                    includes.append(result.group('file'))
+            data = f.read()
+
+        # Remove all comments
+        data = re.sub(r'/\*.*?\*/', '', data, re.DOTALL)
+
+        includes = includes_re.findall(data)
 
         return includes
 
