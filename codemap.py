@@ -185,7 +185,6 @@ def main():
 
         if args.connected:
             if not n.includes or not [x for x in n.includes if x in files]:
-                print('{} has no includes'.format(n.filename))
                 continue
 
         nodes.append(n)
