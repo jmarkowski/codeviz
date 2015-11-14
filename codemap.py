@@ -6,7 +6,9 @@ import argparse
 import os
 import re
 
+
 args = None
+
 
 class RetCode():
     OK, ERROR, ARG, WARNING = range(4)
@@ -14,7 +16,7 @@ class RetCode():
 
 class Node():
     def __init__(self, filename):
-        self.name     = self.get_name(filename)
+        self.name     = '"{}"'.format(filename)
         self.filename = filename
         self.includes = self.get_includes(filename)
 
@@ -34,13 +36,6 @@ class Node():
     def __str__(self):
         s = '{:<20s}-> {}'.format(self.filename, ', '.join(self.includes))
         return s
-
-    @staticmethod
-    def get_name(filename):
-        name = re.sub('(-|\.)','', filename)
-        if name[0].isdigit():
-            name = 'x' + name
-        return name
 
 
 class Edge():
