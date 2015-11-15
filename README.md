@@ -31,8 +31,8 @@ $ which neato
 
 # Example
 
-The image below is an example of the result when generating the codemap for the
-original git source (hash e83c516).
+The image below shows the result of generating the codemap for the original
+git source (hash e83c516).
 
 ![git e83c516](example.png)
 
