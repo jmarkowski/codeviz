@@ -153,26 +153,38 @@ def create_graphic():
     return retcode
 
 
-def get_files(root_path, ext_tpl):
+def get_files(ext_tpl):
     '''
-    Find all the files with root_path as the root directory. Return a
+    Find all the source/header files in the current directory. Return a
     sorted list of all the found files.
     '''
-    if args.filenames:
-        files = list(filter(lambda d: d.endswith(ext_tpl), args.filenames))
+    files_lst = []
+
+    if args.recursive:
+        for relpath, dirs, files in os.walk('.'):
+            for f in files:
+                if f.endswith(ext_tpl):
+                    full_path = os.path.join(relpath, f)
+                    files_lst.append(full_path.lstrip('./'))
     else:
-        files = [f for f in os.listdir(os.getcwd()) if f.endswith(ext_tpl)]
+        if args.filenames:
+            # Use the files passed in as arguments
+            files_lst = \
+                list(filter(lambda d: d.endswith(ext_tpl), args.filenames))
+        else:
+            # Use only the files in the current working directory
+            files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl)]
 
-    files.sort()
+    files_lst.sort()
 
-    return files
+    return files_lst
 
 
 def parse_arguments():
     global args
 
     parser = argparse.ArgumentParser(
-                                 description='Generate a code dependency graph')
+              description='Generate a code dependency graph of c, cpp, h files')
 
     parser.add_argument(
         dest='filenames',
@@ -213,7 +225,7 @@ def main():
 
     valid_exts = ('.c', '.h', '.cpp')
 
-    files = get_files(os.getcwd(), valid_exts)
+    files = get_files(valid_exts)
     nodes = get_nodes(files)
     edges = get_edges(nodes)
 
