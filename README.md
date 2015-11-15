@@ -24,7 +24,7 @@ from the graphviz website for your platform:
 
 Once installed, make sure that you have "neato" within your working path.
 
-```
+```bash
 $ which neato
 /usr/bin/neato
 ```
@@ -43,34 +43,34 @@ Run `codemap.py` inside of your source directory. By default, it will only use
 the source/header files in the working directory (system header files such as
 _stdio.h_ are ignored).
 
-```
+```bash
 $ ./codemap.py
 ```
 
 You may also search for source/header files recursively as so
 
-```
+```bash
 $ ./codemap.py -r
 ```
 
 If you want a black and white version of the generated dependency graph
 
-```
+```bash
 $ ./codemap.py -n
 ```
 
-Finally, what if you want a black and white version of the generated dependency
+What if you want a black and white version of the generated dependency
 graph, AND you would like to ignore files that are not including any other header
 in your source files?
 
-```
+```bash
 $ ./codemap.py -m
 ```
 
 You can specify the name of an output file. The extension will be passed into
 graphviz to generate the appropriate file.
 
-```
+```bash
 $ ./codemap.py -o jpeg-file.jpg
 $ ./codemap.py -o postscript-file.ps
 $ ./codemap.py -o png-file.png
@@ -78,3 +78,9 @@ $ ./codemap.py -o png-file.png
 
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported output formats
+
+Finally, can you exclude certain files and directories from being used.
+
+```bash
+$ ./codemap.py -r --exclude=unit_tests/* --exclude=test*.[ch]   # exclude tests
+```
