@@ -179,14 +179,13 @@ def main():
 
     parse_arguments()
 
-    if args.filenames:
-        c_files = list(filter(lambda d: d.endswith('.c'), args.filenames))
-        h_files = list(filter(lambda d: d.endswith('.h'), args.filenames))
-    else:
-        c_files = [f for f in os.listdir(os.getcwd()) if f.endswith('.c')]
-        h_files = [f for f in os.listdir(os.getcwd()) if f.endswith('.h')]
+    valid_exts = ('.c', '.h', '.cpp')
 
-    files = c_files + h_files
+    if args.filenames:
+        files = list(filter(lambda d: d.endswith(valid_exts), args.filenames))
+    else:
+        files = [f for f in os.listdir(os.getcwd()) if f.endswith(valid_exts)]
+
     files.sort()
 
     nodes = []
