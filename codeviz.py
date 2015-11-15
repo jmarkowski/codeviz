@@ -111,8 +111,7 @@ def create_dot_file(nodes, edges):
     filename = '.'.join(args.outfile.split('.')[:-1])
 
     with open('{}.dot'.format(filename), 'wt', encoding='utf-8') as f:
-        #f.write('graph codemap {\n')
-        f.write('digraph codemap {\n')
+        f.write('digraph codeviz {\n')
         f.write('    splines=true\n') # use splines for arrows
         f.write('    sep="+15,15"\n') # min 25 points of margin
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
@@ -132,7 +131,6 @@ def create_dot_file(nodes, edges):
 
 
 def create_graphic():
-    #cmd = 'dot -Tpng codemap.dot -o codemap.png'
     filename = '.'.join(args.outfile.split('.')[:-1])
     fileext  = args.outfile.split('.')[-1]
 
@@ -213,7 +211,7 @@ def parse_arguments():
     parser.add_argument('-o', '--outfile',
         dest='outfile',
         action='store',
-        default='codemap.png',
+        default='codeviz.png',
         help='output filename')
 
     parser.add_argument('-r',
