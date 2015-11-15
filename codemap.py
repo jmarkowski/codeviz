@@ -5,6 +5,7 @@ import subprocess
 import argparse
 import os
 import re
+import glob
 
 
 args = None
@@ -57,7 +58,7 @@ def printVerbose(string):
 def bash_cmd(cmd):
     retcode = RetCode.OK
 
-    printVerbose('{:<20s} : {}'.format('command', cmd))
+    printVerbose('Command: {}'.format(cmd))
     try:
         out_bytes = subprocess.check_output(cmd.split())
     except subprocess.CalledProcessError as e:
@@ -151,7 +152,7 @@ def create_graphic():
         printVerbose(out_text)
 
     if not retcode:
-        print('Generated code map: {}'.format(args.outfile))
+        print('Output: {}'.format(args.outfile))
 
     return retcode
 
@@ -162,21 +163,31 @@ def get_files(ext_tpl):
     sorted list of all the found files.
     '''
     files_lst = []
+    exclude_lst = []
+
+    if args.exclude:
+        for x in args.exclude:
+            exclude_lst = exclude_lst + glob.glob(x)
+
+    for x in exclude_lst:
+        printVerbose('Excluded: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
             for f in files:
-                if f.endswith(ext_tpl):
-                    full_path = os.path.join(relpath, f)
-                    files_lst.append(full_path.lstrip('./'))
+                full_path = os.path.join(relpath, f).lstrip('./')
+                if full_path.endswith(ext_tpl) and full_path not in exclude_lst:
+                    files_lst.append(full_path)
     else:
         if args.filenames:
             # Use the files passed in as arguments
-            files_lst = \
-                list(filter(lambda d: d.endswith(ext_tpl), args.filenames))
+            files_lst = list(filter( \
+                       lambda d: d.endswith(ext_tpl) and d not in exclude_lst, \
+                       args.filenames))
         else:
             # Use only the files in the current working directory
-            files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl)]
+            files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl) \
+                                                       and f not in exclude_lst]
 
     files_lst.sort()
 
@@ -219,6 +230,11 @@ def parse_arguments():
         dest='must_include',
         action='store_true',
         help='only show nodes whose includes depend on other nodes')
+
+    parser.add_argument('-e', '--exclude',
+        dest='exclude',
+        action='append',
+        help='exclude files matching PATTERN')
 
     args = parser.parse_args()
 
