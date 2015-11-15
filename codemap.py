@@ -76,17 +76,37 @@ def find_node(nodes, filename):
     return None
 
 
+def get_nodes(files):
+    global args
+
+    nodes = []
+
+    for f in files:
+        n = Node(f)
+        printVerbose(n)
+
+        if args.must_include:
+            if not n.includes or not [x for x in n.includes if x in files]:
+                continue
+
+        nodes.append(n)
+
+    return nodes
+
+
 def get_edges(nodes):
     edges = []
+
     for start_node in nodes:
         for include_file in start_node.includes:
             end_node = find_node(nodes, include_file)
             if end_node:
                 edges.append(Edge(start_node, end_node))
+
     return edges
 
 
-def gen_dot_file(nodes, edges):
+def create_dot_file(nodes, edges):
     filename = '.'.join(args.outfile.split('.')[:-1])
 
     with open('{}.dot'.format(filename), 'wt', encoding='utf-8') as f:
@@ -110,7 +130,7 @@ def gen_dot_file(nodes, edges):
         f.write('}')
 
 
-def gen_graphic():
+def create_graphic():
     #cmd = 'dot -Tpng codemap.dot -o codemap.png'
     filename = '.'.join(args.outfile.split('.')[:-1])
     fileext  = args.outfile.split('.')[-1]
@@ -131,6 +151,21 @@ def gen_graphic():
         printVerbose(out_text)
 
     return retcode
+
+
+def get_files(root_path, ext_tpl):
+    '''
+    Find all the files with root_path as the root directory. Return a
+    sorted list of all the found files.
+    '''
+    if args.filenames:
+        files = list(filter(lambda d: d.endswith(ext_tpl), args.filenames))
+    else:
+        files = [f for f in os.listdir(os.getcwd()) if f.endswith(ext_tpl)]
+
+    files.sort()
+
+    return files
 
 
 def parse_arguments():
@@ -155,11 +190,10 @@ def parse_arguments():
         default='codemap.png',
         help='output filename')
 
-    # todo
-    # parser.add_argument('-r',
-    #     dest='recursive',
-    #     action='store_true',
-    #     help='recursive scan of .c and .h files')
+    parser.add_argument('-r',
+        dest='recursive',
+        action='store_true',
+        help='recursive scan of .c and .h files')
 
     parser.add_argument('-n', '--no-color',
         dest='no_color',
@@ -175,36 +209,17 @@ def parse_arguments():
 
 
 def main():
-    global args
-
     parse_arguments()
 
     valid_exts = ('.c', '.h', '.cpp')
 
-    if args.filenames:
-        files = list(filter(lambda d: d.endswith(valid_exts), args.filenames))
-    else:
-        files = [f for f in os.listdir(os.getcwd()) if f.endswith(valid_exts)]
-
-    files.sort()
-
-    nodes = []
-
-    for f in files:
-        n = Node(f)
-        printVerbose(n)
-
-        if args.must_include:
-            if not n.includes or not [x for x in n.includes if x in files]:
-                continue
-
-        nodes.append(n)
-
+    files = get_files(os.getcwd(), valid_exts)
+    nodes = get_nodes(files)
     edges = get_edges(nodes)
 
-    gen_dot_file(nodes, edges)
+    create_dot_file(nodes, edges)
 
-    retcode = gen_graphic()
+    retcode = create_graphic()
 
     return retcode
 
