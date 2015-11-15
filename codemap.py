@@ -20,6 +20,11 @@ class Node():
         self.filename = filename
         self.includes = self.get_includes(filename)
 
+        if filename.endswith('.c') or filename.endswith('.cpp'):
+            self.filetype = 'source'
+        elif filename.endswith('.h'):
+            self.filetype = 'header'
+
     def get_includes(self, filename):
         includes_re = re.compile(r'#include[\s]?["<]+(?P<file>[\w\.]+)[">]+')
 
@@ -91,11 +96,13 @@ def gen_dot_file(nodes, edges):
         f.write('    sep="+15,15"\n') # min 25 points of margin
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
-        #f.write('    ranksep=3\n')
-        #f.write('    ratio=auto\n')
-        #f.write('   node [shape=box, style=filled]\n')
         for n in nodes:
-            f.write('    {} [label = "{}"]\n'.format(n.name, n.filename))
+            if args.color:
+                if n.filetype == 'source':
+                    f.write('    node [fillcolor="#ff9999", style=filled]')
+                elif n.filetype == 'header':
+                    f.write('    node [fillcolor="#ccccff", style=filled]')
+            f.write(' {:<20s} [label = "{}"]\n'.format(n.name, n.filename))
 
         f.write('\n')
         for e in edges:
@@ -154,10 +161,15 @@ def parse_arguments():
     #     action='store_true',
     #     help='recursive scan of .c and .h files')
 
-    parser.add_argument('-c', '--connected',
-        dest='connected',
+    parser.add_argument('-c', '--color',
+        dest='color',
         action='store_true',
-        help='only graph nodes that have connections')
+        help='use colors to highlight source and header files')
+
+    parser.add_argument('-m', '--must-include',
+        dest='must_include',
+        action='store_true',
+        help='only show nodes whose includes depend on other nodes')
 
     args = parser.parse_args()
 
@@ -183,7 +195,7 @@ def main():
         n = Node(f)
         printVerbose(n)
 
-        if args.connected:
+        if args.must_include:
             if not n.includes or not [x for x in n.includes if x in files]:
                 continue
 
