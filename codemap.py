@@ -150,6 +150,9 @@ def create_graphic():
     if out_text:
         printVerbose(out_text)
 
+    if not retcode:
+        print('Generated code map: {}'.format(args.outfile))
+
     return retcode
 
 
