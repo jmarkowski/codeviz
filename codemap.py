@@ -97,7 +97,7 @@ def gen_dot_file(nodes, edges):
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
         for n in nodes:
-            if args.color:
+            if not args.no_color:
                 if n.filetype == 'source':
                     f.write('    node [fillcolor="#ff9999", style=filled]')
                 elif n.filetype == 'header':
@@ -161,10 +161,10 @@ def parse_arguments():
     #     action='store_true',
     #     help='recursive scan of .c and .h files')
 
-    parser.add_argument('-c', '--color',
-        dest='color',
+    parser.add_argument('-n', '--no-color',
+        dest='no_color',
         action='store_true',
-        help='use colors to highlight source and header files')
+        help='do not use colors to highlight source and header files')
 
     parser.add_argument('-m', '--must-include',
         dest='must_include',
