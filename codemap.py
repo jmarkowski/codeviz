@@ -126,7 +126,7 @@ def create_dot_file(nodes, edges):
 
         f.write('\n')
         for e in edges:
-            f.write('    {} -> {}\n'.format(e.start, e.end))
+            f.write('    {:<20s} -> {:>20s}\n'.format(e.start, e.end))
         f.write('}')
 
 
