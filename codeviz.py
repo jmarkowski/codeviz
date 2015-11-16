@@ -173,7 +173,7 @@ def get_files(ext_tpl):
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
             for f in files:
-                full_path = os.path.join(relpath, f).lstrip('./')
+                full_path = os.path.join(relpath, f).lstrip('./\\')
                 if full_path.endswith(ext_tpl) and full_path not in exclude_lst:
                     files_lst.append(full_path)
     else:
