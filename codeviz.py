@@ -150,7 +150,8 @@ def create_graphic():
         printVerbose(out_text)
 
     if not retcode:
-        print('Output: {}'.format(args.outfile))
+        print('Output dot    : {}.dot'.format(filename))
+        print('Output graphic: {}'.format(args.outfile))
 
     return retcode
 
