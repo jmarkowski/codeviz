@@ -50,7 +50,7 @@ class Edge():
         self.end = end_node.name
 
 
-def printVerbose(string):
+def print_verbose(string):
     if args.verbose:
         print(string)
 
@@ -58,7 +58,7 @@ def printVerbose(string):
 def bash_cmd(cmd):
     retcode = RetCode.OK
 
-    printVerbose('Command: {}'.format(cmd))
+    print_verbose('Command: {}'.format(cmd))
     try:
         out_bytes = subprocess.check_output(cmd.split())
     except subprocess.CalledProcessError as e:
@@ -84,7 +84,7 @@ def get_nodes(files):
 
     for f in files:
         n = Node(f)
-        printVerbose(n)
+        print_verbose(n)
 
         if args.must_include:
             if not n.includes or not [x for x in n.includes if x in files]:
@@ -147,7 +147,7 @@ def create_graphic():
     (out_text, retcode) = bash_cmd(cmd)
 
     if out_text:
-        printVerbose(out_text)
+        print_verbose(out_text)
 
     if not retcode:
         print('Output dot    : {}.dot'.format(filename))
@@ -169,7 +169,7 @@ def get_files(ext_tpl):
             exclude_lst = exclude_lst + glob.glob(x)
 
     for x in exclude_lst:
-        printVerbose('Excluded: {}'.format(x))
+        print_verbose('Excluded: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
