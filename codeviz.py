@@ -33,7 +33,7 @@ class Node():
             data = f.read()
 
         # Remove all comments
-        data = re.sub(r'/\*.*?\*/', '', data, re.DOTALL)
+        data = re.sub(r'/\*.*?\*/', '', data, flags=re.DOTALL)
         data = re.sub(r'//.*', '', data)
 
         includes = includes_re.findall(data)
