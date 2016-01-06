@@ -17,9 +17,10 @@ class RetCode():
 
 class Node():
     def __init__(self, filename):
-        self.name     = '"{}"'.format(filename)
-        self.filename = filename
-        self.includes = self.get_includes(filename)
+        self.name      = '"{}"'.format(filename)
+        self.filename  = filename
+        self.includes  = self.get_includes(filename)
+        self.highlight = False
 
         if filename.endswith('.c') or filename.endswith('.cpp'):
             self.filetype = 'source'
@@ -78,10 +79,26 @@ def find_node(nodes, filename):
     return None
 
 
+def get_highlighted_files():
+
+    highlight_lst = []
+
+    if args.highlight:
+        for x in args.highlight:
+            highlight_lst = highlight_lst + glob.glob(x)
+
+    for x in highlight_lst:
+        print_verbose('Highlight: %s' % x)
+
+    return highlight_lst
+
+
 def get_nodes(files):
     global args
 
     nodes = []
+
+    highlight_lst = get_highlighted_files()
 
     for f in files:
         n = Node(f)
@@ -90,6 +107,9 @@ def get_nodes(files):
         if args.must_include:
             if not n.includes or not [x for x in n.includes if x in files]:
                 continue
+
+        if f in highlight_lst:
+            n.highlight = True
 
         nodes.append(n)
 
@@ -120,9 +140,16 @@ def create_dot_file(nodes, edges):
         for n in nodes:
             if not args.no_color:
                 if n.filetype == 'source':
-                    f.write('    node [fillcolor="#ff9999", style=filled]')
+                    if n.highlight:
+                        f.write('    node [fillcolor="#ff9999", style=filled]')
+                    else:
+                        f.write('    node [fillcolor="#ff9999", style=filled]')
                 elif n.filetype == 'header':
-                    f.write('    node [fillcolor="#ccccff", style=filled]')
+                    if n.highlight:
+                        f.write('    node [fillcolor="#ccffcc", style=filled]')
+                    else:
+                        f.write('    node [fillcolor="#ccccff", style=filled]')
+
             f.write(' {:<20s} [label = "{}"]\n'.format(n.name, n.filename))
 
         f.write('\n')
@@ -235,6 +262,11 @@ def parse_arguments():
         dest='exclude',
         action='append',
         help='exclude files matching PATTERN')
+
+    parser.add_argument('-H', '--highlight',
+        dest='highlight',
+        action='append',
+        help='highlight files matching PATTERN')
 
     args = parser.parse_args()
 
