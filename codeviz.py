@@ -195,9 +195,7 @@ def get_files(ext_tpl):
     if args.exclude:
         for x in args.exclude:
             exclude_lst = exclude_lst + glob.glob(x)
-
-    for x in exclude_lst:
-        print_verbose('Excluded: {}'.format(x))
+            print_verbose('Excluded: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
