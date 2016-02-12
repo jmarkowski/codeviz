@@ -12,9 +12,10 @@ of your code.
 
 # Installation
 
-No installation necessary for this script.
+You will need to have a [python3](http://www.python.org) interpreter installed
+to run the script.
 
-However, the script itself _requires_ __graphviz__ installed. Follow the install
+Also, the script itself _requires_ __graphviz__ installed. Follow the install
 instructions from the graphviz website for your platform:
 
 * [fedora](http://www.graphviz.org/Download_linux_fedora.php)
@@ -23,7 +24,7 @@ instructions from the graphviz website for your platform:
 * [windows](http://graphviz.org/Download_windows.php)
 * [archlinux](https://www.archlinux.org/packages/extra/x86_64/graphviz/files/) (AUR)
 
-Once installed, make sure that you have it within your working path.
+Once installed, make sure that you have these tools in your environment path.
 
 
 # Example
