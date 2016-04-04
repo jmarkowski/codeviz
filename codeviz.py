@@ -66,8 +66,15 @@ def bash_cmd(cmd):
     except subprocess.CalledProcessError as e:
         out_bytes = e.output        # output generated before error
         retcode   = e.returncode
+    except FileNotFoundError as e:
+        print('Failed to run command: {}'.format(cmd))
+        print('graphviz commands not found')
+        retcode = RetCode.ERROR
 
-    out_text = out_bytes.decode('utf-8')
+    if retcode:
+        out_text = ''
+    else:
+        out_text = out_bytes.decode('utf-8')
 
     return (out_text, retcode)
 
