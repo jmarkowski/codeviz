@@ -201,7 +201,7 @@ def get_files(ext_tpl):
 
     if args.exclude:
         for x in args.exclude:
-            exclude_lst = exclude_lst + glob.glob(x)
+            exclude_lst.extend(glob.glob(x))
             print_verbose('Excluded: {}'.format(x))
 
     if args.recursive:
