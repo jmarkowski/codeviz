@@ -80,5 +80,5 @@ of supported output formats
 Finally, can you exclude certain files and directories from being used.
 
 ```
-codeviz.py -r --exclude=unit_tests/* --exclude=test*.[ch]   # exclude tests
+codeviz.py -r --exclude=unit-tests/* --exclude=test *.[ch]   # exclude tests
 ```
