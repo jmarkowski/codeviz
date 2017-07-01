@@ -68,7 +68,8 @@ def bash_cmd(cmd):
         retcode   = e.returncode
     except FileNotFoundError as e:
         print('Failed to run command: {}'.format(cmd))
-        print('graphviz commands not found')
+        print('Install graphviz '
+              '(http://graphviz.org)')
         retcode = RetCode.ERROR
 
     if retcode:
