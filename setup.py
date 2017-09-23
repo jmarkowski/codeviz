@@ -20,6 +20,16 @@ setup(
     author_email='jan@markowski.ca',
     license='MIT',
     py_modules=['codeviz'],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ],
 
     entry_points={
         'console_scripts': [
