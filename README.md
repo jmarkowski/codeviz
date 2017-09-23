@@ -15,7 +15,7 @@ of your code.
 You will need to have a [python3](http://www.python.org) interpreter installed
 to run the script.
 
-Also, the script itself _requires_ __graphviz__ installed. Follow the install
+The script itself _requires_ __graphviz__ installed. Follow the install
 instructions from the graphviz website for your platform:
 
 * [fedora](http://www.graphviz.org/Download_linux_fedora.php)
@@ -26,6 +26,13 @@ instructions from the graphviz website for your platform:
 
 Once installed, make sure that you have these tools in your environment path.
 
+To install `codeviz` into your system:
+
+```
+git clone https://github.com/jmarkowski/codeviz.git
+cd codeviz
+python3 setup.py install
+```
 
 # Example
 
@@ -37,24 +44,24 @@ original git source at hash e83c516.
 
 # Usage
 
-Run `codeviz.py` inside of your source directory. By default, it will only use
+Run `codeviz` inside of your source directory. By default, it will only use
 the source/header files in the working directory (system header files such as
 _stdio.h_ are ignored).
 
 ```
-codeviz.py
+codeviz
 ```
 
 You may also search for source/header files recursively as so
 
 ```
-codeviz.py -r
+codeviz -r
 ```
 
 If you want a black and white version of the generated dependency graph
 
 ```
-codeviz.py -n
+codeviz -n
 ```
 
 What if you want a black and white version of the generated dependency
@@ -62,16 +69,16 @@ graph, AND you would like to ignore files that are not including any other heade
 in your source files?
 
 ```
-codeviz.py -m
+codeviz -m
 ```
 
 You can specify the name of an output file. The extension will be passed into
 graphviz to generate the appropriate file.
 
 ```
-codeviz.py -o jpeg-file.jpg
-codeviz.py -o postscript-file.ps
-codeviz.py -o png-file.png
+codeviz -o jpeg-file.jpg
+codeviz -o postscript-file.ps
+codeviz -o png-file.png
 ```
 
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
@@ -80,5 +87,5 @@ of supported output formats
 Finally, can you exclude certain files and directories from being used.
 
 ```
-codeviz.py -r --exclude=unit-tests/* --exclude=test *.[ch]   # exclude tests
+codeviz -r --exclude=unit-tests/* --exclude=test *.[ch]   # exclude tests
 ```

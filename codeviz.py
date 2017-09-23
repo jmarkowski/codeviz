@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import subprocess
 import argparse
@@ -291,11 +289,3 @@ def main():
     retcode = create_graphic()
 
     return retcode
-
-
-if __name__ == '__main__':
-    try:
-        retcode = main()
-        sys.exit(retcode)
-    except KeyboardInterrupt as e:
-        print('\nAborting')
