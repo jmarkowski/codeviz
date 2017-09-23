@@ -3,6 +3,7 @@ from setuptools import setup
 # To use a consistent encoding
 from codecs import open
 from os import path
+import meta
 
 here = path.abspath(path.dirname(__file__))
 
@@ -12,14 +13,14 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='codeviz',
-    version='0.1.0',
-    description='Create visual code dependency graphs for C/C++ projects',
+    version=meta.__version__,
+    description=meta.__description__,
     long_description=long_description,
-    url='https://github.com/jmarkowski/codeviz',
-    author='Jan Markowski',
-    author_email='jan@markowski.ca',
+    url=meta.__url__,
+    author=meta.__author__,
+    author_email=meta.__email__,
     license='MIT',
-    py_modules=['codeviz'],
+    py_modules=['codeviz', 'meta'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

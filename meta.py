@@ -1,0 +1,5 @@
+__version__ = '0.1.0'
+__author__ = 'Jan Markowski'
+__email__ = 'jan' '@' 'markowski.ca'
+__url__ = 'https://github.com/jmarkowski/codeviz'
+__description__ = 'Create visual code dependency graphs for C/C++ projects'
