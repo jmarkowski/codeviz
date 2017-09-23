@@ -22,7 +22,7 @@ instructions from the graphviz website for your platform:
 * [mac OSX](http://www.graphviz.org/Download_macos.php)
 * [ubuntu/debian](http://www.graphviz.org/Download_linux_ubuntu.php)
 * [windows](http://graphviz.org/Download_windows.php)
-* [archlinux](https://www.archlinux.org/packages/extra/x86_64/graphviz/files/) (AUR)
+* [archlinux](https://www.archlinux.org/packages/extra/x86_64/graphviz/) (AUR)
 
 Once installed, make sure that you have these tools in your environment path.
 
