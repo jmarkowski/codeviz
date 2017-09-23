@@ -280,7 +280,7 @@ def parse_arguments():
 def main():
     parse_arguments()
 
-    valid_exts = ('.c', '.h', '.cpp')
+    valid_exts = ('.c', '.h', '.cpp', '.hpp')
 
     files = get_files(valid_exts)
     nodes = get_nodes(files)
