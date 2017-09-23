@@ -236,10 +236,15 @@ def parse_arguments():
         metavar='filename',
         nargs='*')
 
-    parser.add_argument('-v', '--verbose',
+    parser.add_argument('--verbose',
         dest='verbose',
         action='store_true',
         help='verbose mode')
+
+    parser.add_argument('-v', '--version',
+        dest='version',
+        action='store_true',
+        help='display version information')
 
     parser.add_argument('-o', '--outfile',
         dest='outfile',
@@ -277,6 +282,11 @@ def parse_arguments():
 
 def main():
     parse_arguments()
+
+    if args.version:
+        import meta
+        print('{} {}'.format('codeviz', meta.__version__))
+        return RetCode.OK
 
     valid_exts = ('.c', '.h', '.cpp', '.hpp')
 
