@@ -229,7 +229,7 @@ def parse_arguments():
     global args
 
     parser = argparse.ArgumentParser(
-              description='Generate a code dependency graph of c, cpp, h files')
+              description='Generate a code dependency graph for C/C++ projects')
 
     parser.add_argument(
         dest='filenames',
