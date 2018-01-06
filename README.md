@@ -18,11 +18,13 @@ to run the script.
 The script itself _requires_ __graphviz__ installed. Follow the install
 instructions from the graphviz website for your platform:
 
-* [fedora](http://www.graphviz.org/Download_linux_fedora.php)
-* [mac OSX](http://www.graphviz.org/Download_macos.php)
-* [ubuntu/debian](http://www.graphviz.org/Download_linux_ubuntu.php)
-* [windows](http://graphviz.org/Download_windows.php)
-* [archlinux](https://www.archlinux.org/packages/extra/x86_64/graphviz/) (AUR)
+* [Arch Linux](https://www.archlinux.org/packages/extra/x86_64/graphviz/) (AUR)
+* [Fedora](http://www.graphviz.org/download)
+* [FreeBSD](https://www.freshports.org/graphics/graphviz)
+* [Mac](http://www.graphviz.org/download)
+* [Ubuntu/Debian](http://www.graphviz.org/download)
+* [Windows](http://graphviz.org/download)
+* [Solaris](http://graphviz.org/download)
 
 Once installed, make sure that you have these tools in your environment path.
 
