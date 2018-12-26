@@ -30,11 +30,10 @@ Once installed, make sure that you have these tools in your environment path.
 
 To install `codeviz` into your system:
 
-```
-git clone https://github.com/jmarkowski/codeviz.git
-cd codeviz
-python3 setup.py install
-```
+    $ git clone https://github.com/jmarkowski/codeviz.git
+    $ cd codeviz
+    $ python3 setup.py install
+
 
 # Example
 
@@ -50,44 +49,32 @@ Run `codeviz` inside of your source directory. By default, it will only use
 the source/header files in the working directory (system header files such as
 _stdio.h_ are ignored).
 
-```
-codeviz
-```
+    $ codeviz
 
 You may also search for source/header files recursively as so
 
-```
-codeviz -r
-```
+    $ codeviz -r
 
 If you want a black and white version of the generated dependency graph
 
-```
-codeviz -n
-```
+    $ codeviz -n
 
 What if you want a black and white version of the generated dependency
 graph, AND you would like to ignore files that are not including any other header
 in your source files?
 
-```
-codeviz -m
-```
+    $ codeviz -m
 
 You can specify the name of an output file. The extension will be passed into
 graphviz to generate the appropriate file.
 
-```
-codeviz -o jpeg-file.jpg
-codeviz -o postscript-file.ps
-codeviz -o png-file.png
-```
+    $ codeviz -o jpeg-file.jpg
+    $ codeviz -o postscript-file.ps
+    $ codeviz -o png-file.png
 
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported output formats
 
 Finally, can you exclude certain files and directories from being used.
 
-```
-codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h}   # exclude tests
-```
+    $ codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h}   # exclude tests
