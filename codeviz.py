@@ -27,7 +27,7 @@ class Node():
             self.filetype = 'header'
 
     def get_includes(self, filename):
-        includes_re = re.compile(r'#include[\s]?["<]+(?P<file>[\w\.]+)[">]+')
+        includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
 
         with open(filename, 'rt') as f:
             data = f.read()
