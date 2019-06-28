@@ -12,11 +12,8 @@ of your code.
 
 # Installation
 
-You will need to have a [python3](http://www.python.org) interpreter installed
-to run the script.
-
-The script itself _requires_ __graphviz__ installed. Follow the install
-instructions from the graphviz website for your platform:
+`codeviz` requires __graphviz__ installed. Follow the graphviz installation
+instructions for your platform:
 
 * [Arch Linux](https://www.archlinux.org/packages/extra/x86_64/graphviz/) (AUR)
 * [Fedora](http://www.graphviz.org/download)
@@ -26,9 +23,9 @@ instructions from the graphviz website for your platform:
 * [Windows](http://graphviz.org/download)
 * [Solaris](http://graphviz.org/download)
 
-Once installed, make sure that you have these tools in your environment path.
+Once graphviz is installed, ensure that it is available in your environment.
 
-To install `codeviz` into your system:
+Finally, to install `codeviz` onto your system:
 
     $ git clone https://github.com/jmarkowski/codeviz.git
     $ cd codeviz
@@ -38,7 +35,7 @@ To install `codeviz` into your system:
 # Example
 
 The image below shows the result of generating the visual code map for the
-original git source at hash e83c516.
+original git source at hash `e83c516`.
 
 ![git e83c516](example.png)
 
