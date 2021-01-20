@@ -74,4 +74,4 @@ of supported output formats
 
 Finally, can you exclude certain files and directories from being used.
 
-    $ codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h}   # exclude tests
+    $ codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h,hpp}   # exclude tests
