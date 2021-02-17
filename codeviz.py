@@ -29,16 +29,16 @@ class Node():
     def get_includes(self, filename):
         includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
 
-        with open(filename, 'rt') as f:
-            data = f.read()
-
-        # Remove all comments
-        data = re.sub(r'/\*.*?\*/', '', data, flags=re.DOTALL)
-        data = re.sub(r'//.*', '', data)
-
-        includes = includes_re.findall(data)
-
-        return includes
+        try:
+            with open(filename, 'rt') as f:
+                    data = f.read()
+            # Remove all comments
+            data = re.sub(r'/\*.*?\*/', '', data, flags=re.DOTALL)
+            data = re.sub(r'//.*', '', data)
+            return includes_re.findall(data)
+        except UnicodeError as ex:
+                print(f"Cann't read file: \"{filename}\", position: {ex.start}")
+        return [None]
 
     def __str__(self):
         s = '{:<20s}-> {}'.format(self.filename, ', '.join(self.includes))
@@ -146,16 +146,19 @@ def create_dot_file(nodes, edges):
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
         for n in nodes:
             if not args.no_color:
-                if n.filetype == 'source':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
-                elif n.filetype == 'header':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ccffcc", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ccccff", style=filled]')
+                try:
+                    if n.filetype == 'source':
+                        if n.highlight:
+                            f.write('    node [fillcolor="#ff9999", style=filled]')
+                        else:
+                            f.write('    node [fillcolor="#ff9999", style=filled]')
+                    elif n.filetype == 'header':
+                        if n.highlight:
+                            f.write('    node [fillcolor="#ccffcc", style=filled]')
+                        else:
+                            f.write('    node [fillcolor="#ccccff", style=filled]')
+                except:
+                    print("File type not recognized, file:\"" + n.filename + "\"")
 
             f.write(' {:<20s} [label = "{}"]\n'.format(n.name, n.filename))
 
