@@ -23,7 +23,7 @@ class Node():
 
         if filename.endswith('.c') or filename.endswith('.cpp'):
             self.filetype = 'source'
-        elif filename.endswith('.h'):
+        elif filename.endswith('.h') or filename.endswith('.hpp'):
             self.filetype = 'header'
 
     def get_includes(self, filename):
