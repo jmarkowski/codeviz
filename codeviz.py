@@ -37,7 +37,7 @@ class Node():
             data = re.sub(r'//.*', '', data)
             return includes_re.findall(data)
         except UnicodeError as ex:
-                print(f"Cann't read file: \"{filename}\", position: {ex.start}")
+                print(f'Failed to read file: \"{filename}\", position: {ex.start}')
         return [None]
 
     def __str__(self):
