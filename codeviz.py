@@ -16,8 +16,8 @@ class RetCode():
 
 class Node():
     def __init__(self, filename):
-        self.name      = '"{}"'.format(filename)
-        self.filename  = filename
+        self.name      = '"{}"'.format(os.path.basename(filename))
+        self.filename  = os.path.basename(filename)
         self.includes  = self.get_includes(filename)
         self.highlight = False
 
