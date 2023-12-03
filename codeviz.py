@@ -19,6 +19,19 @@ class RetCode():
     OK, ERROR, ARG, WARNING = range(4)
 
 
+class Error(Exception):
+    pass
+
+
+def print_verbose(string):
+    if args.verbose:
+        print(string)
+
+
+def print_error(error):
+    print(f'ERROR - {error}')
+
+
 class Node():
     def __init__(self, filepath):
         self.id = f'"{filepath}"'
@@ -55,11 +68,6 @@ class Edge():
         self.source_id = source_node.id
         self.target_id = target_node.id
         self.collision = collision
-
-
-def print_verbose(string):
-    if args.verbose:
-        print(string)
 
 
 def bash_cmd(cmd):
@@ -118,7 +126,6 @@ def get_nodes(files):
 
     for f in files:
         n = Node(f)
-        print_verbose(n)
 
         if args.must_include:
             # Skip source files that are missing any of the headers
@@ -223,27 +230,33 @@ def create_graphic():
     return retcode
 
 
-def find_files(ignore_lst):
+def find_files(paths, ignore_lst, recurse=False):
     """
-    Find all the source files in the current directory.
+    Find all the source files for the given paths.
     Return a sorted list of all the found files.
     """
-    files_lst = []
+    files = set()
 
-    if args.recursive:
-        for relpath, dirs, files in os.walk('.'):
-            for f in files:
-                full_path = os.path.join(relpath, f).lstrip('./\\')
-                if full_path.endswith(EXTENSIONS) \
-                        and full_path not in ignore_lst:
-                    files_lst.append(full_path)
-        files_lst = sorted(files_lst)
-    else:
-        files = args.filenames or os.listdir('.')
-        t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
-        files_lst = sorted(filter(t, files))
+    for p in paths:
+        if os.path.isfile(p):
+            files.add(p)
+        elif os.path.isdir(p):
+            if recurse:
+                for relpath, dirs, filenames in os.walk(p):
+                    for f in filenames:
+                        full_path = os.path.join(relpath, f).lstrip('./\\')
+                        if full_path.endswith(EXTENSIONS) \
+                                and full_path not in ignore_lst:
+                            files.add(full_path)
+            else:
+                t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
+                found_files = filter(t, os.listdir(p))
+                full_paths = map(lambda f: os.path.join(p, f), found_files)
+                files.update(full_paths)
+        else:
+            raise Error(f'Invalid file: {p}')
 
-    return files_lst
+    return sorted(files)
 
 
 def get_files_to_ignore(ignore_globs):
@@ -251,8 +264,9 @@ def get_files_to_ignore(ignore_globs):
 
     if ignore_globs:
         for g in ignore_globs:
-            files.update(glob.glob(g))
+            files.update(glob.glob(g, recursive=True))
 
+    if files:
         print_verbose('Ignore files:\n\t{}'.format('\n\t'.join(sorted(files))))
 
     return files
@@ -265,8 +279,8 @@ def parse_arguments():
               description='Generate a code dependency graph for C/C++ projects')
 
     parser.add_argument(
-        dest='filenames',
-        metavar='filename',
+        dest='paths',
+        metavar='path(s)',
         nargs='*')
 
     parser.add_argument('--verbose',
@@ -324,7 +338,9 @@ def main():
         return RetCode.OK
 
     ignore_files = get_files_to_ignore(args.ignore_globs)
-    files = find_files(ignore_files)
+    files = find_files(args.paths, ignore_files, recurse=args.recursive)
+
+    print_verbose('Found files:\n\t{}'.format('\n\t'.join(files)))
 
     nodes = get_nodes(files)
 
@@ -340,6 +356,11 @@ def main():
 
 
 if __name__ == '__main__':
-    retcode = main()
+    retcode = RetCode.ERROR
+
+    try:
+        retcode = main()
+    except Error as e:
+        print_error(e)
 
     sys.exit(retcode)
