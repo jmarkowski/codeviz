@@ -196,18 +196,12 @@ def create_graphic():
     return retcode
 
 
-def get_files():
-    '''
-    Find all the source/header files in the current directory. Return a
-    sorted list of all the found files.
-    '''
+def find_files(ignore_lst):
+    """
+    Find all the source files in the current directory.
+    Return a sorted list of all the found files.
+    """
     files_lst = []
-    ignore_lst = []
-
-    if args.ignore:
-        for x in args.ignore:
-            ignore_lst.extend(glob.glob(x))
-            print_verbose('Ignored: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
@@ -223,6 +217,18 @@ def get_files():
         files_lst = sorted(filter(t, files))
 
     return files_lst
+
+
+def get_files_to_ignore(ignore_globs):
+    files = set()
+
+    if ignore_globs:
+        for g in ignore_globs:
+            files.update(glob.glob(g))
+
+        print_verbose('Ignore files:\n\t{}'.format('\n\t'.join(sorted(files))))
+
+    return files
 
 
 def parse_arguments():
@@ -268,9 +274,10 @@ def parse_arguments():
         help='only show nodes whose includes depend on other nodes')
 
     parser.add_argument('-i', '--ignore',
-        dest='ignore',
+        dest='ignore_globs',
+        metavar='PATTERN',
         action='append',
-        help='ignore files matching PATTERN')
+        help='ignore files matching glob PATTERN')
 
     parser.add_argument('-H', '--highlight',
         dest='highlight',
@@ -288,7 +295,8 @@ def main():
         print('{} {}'.format('codeviz', meta.__version__))
         return RetCode.OK
 
-    files = get_files()
+    ignore_files = get_files_to_ignore(args.ignore_globs)
+    files = find_files(ignore_files)
     nodes = get_nodes(files)
     edges = get_edges(nodes)
 
