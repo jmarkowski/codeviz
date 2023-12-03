@@ -10,6 +10,11 @@ import glob
 args = None
 
 
+SOURCE_EXTENSIONS = ('.c', '.cpp')
+HEADER_EXTENSIONS = ('.h', '.hpp')
+EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
+
+
 class RetCode():
     OK, ERROR, ARG, WARNING = range(4)
 
@@ -21,9 +26,9 @@ class Node():
         self.includes  = self.get_includes(filename)
         self.highlight = False
 
-        if filename.endswith('.c') or filename.endswith('.cpp'):
+        if filename.endswith(SOURCE_EXTENSIONS):
             self.filetype = 'source'
-        elif filename.endswith('.h') or filename.endswith('.hpp'):
+        elif filename.endswith(HEADER_EXTENSIONS):
             self.filetype = 'header'
 
     def get_includes(self, filename):
@@ -112,7 +117,12 @@ def get_nodes(files):
         print_verbose(n)
 
         if args.must_include:
-            if not n.includes or not [x for x in n.includes if x in files]:
+            # Skip source files that are missing any of the headers
+            # from the list of header-based files.
+            file_has_no_headers = not n.includes
+            file_header_in_files = bool([h for h in n.includes if h in files])
+
+            if file_has_no_headers or not file_header_in_files:
                 continue
 
         if f in highlight_lst:
@@ -191,39 +201,39 @@ def create_graphic():
     return retcode
 
 
-def get_files(ext_tpl):
-    '''
-    Find all the source/header files in the current directory. Return a
-    sorted list of all the found files.
-    '''
+def find_files(ignore_lst):
+    """
+    Find all the source files in the current directory.
+    Return a sorted list of all the found files.
+    """
     files_lst = []
-    exclude_lst = []
-
-    if args.exclude:
-        for x in args.exclude:
-            exclude_lst.extend(glob.glob(x))
-            print_verbose('Excluded: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
             for f in files:
                 full_path = os.path.join(relpath, f).lstrip('./\\')
-                if full_path.endswith(ext_tpl) and full_path not in exclude_lst:
+                if full_path.endswith(EXTENSIONS) \
+                        and full_path not in ignore_lst:
                     files_lst.append(full_path)
+        files_lst = sorted(files_lst)
     else:
-        if args.filenames:
-            # Use the files passed in as arguments
-            files_lst = list(filter( \
-                       lambda d: d.endswith(ext_tpl) and d not in exclude_lst, \
-                       args.filenames))
-        else:
-            # Use only the files in the current working directory
-            files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl) \
-                                                       and f not in exclude_lst]
-
-    files_lst.sort()
+        files = args.filenames or os.listdir('.')
+        t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
+        files_lst = sorted(filter(t, files))
 
     return files_lst
+
+
+def get_files_to_ignore(ignore_globs):
+    files = set()
+
+    if ignore_globs:
+        for g in ignore_globs:
+            files.update(glob.glob(g))
+
+        print_verbose('Ignore files:\n\t{}'.format('\n\t'.join(sorted(files))))
+
+    return files
 
 
 def parse_arguments():
@@ -268,15 +278,17 @@ def parse_arguments():
         action='store_true',
         help='only show nodes whose includes depend on other nodes')
 
-    parser.add_argument('-e', '--exclude',
-        dest='exclude',
+    parser.add_argument('-i', '--ignore',
+        dest='ignore_globs',
+        metavar='PATTERN',
         action='append',
-        help='exclude files matching PATTERN')
+        help='ignore files matching glob PATTERN')
 
     parser.add_argument('-H', '--highlight',
         dest='highlight',
+        metavar='PATTERN',
         action='append',
-        help='highlight files matching PATTERN')
+        help='highlight files matching glob PATTERN')
 
     args = parser.parse_args()
 
@@ -289,9 +301,8 @@ def main():
         print('{} {}'.format('codeviz', meta.__version__))
         return RetCode.OK
 
-    valid_exts = ('.c', '.h', '.cpp', '.hpp')
-
-    files = get_files(valid_exts)
+    ignore_files = get_files_to_ignore(args.ignore_globs)
+    files = find_files(ignore_files)
     nodes = get_nodes(files)
     edges = get_edges(nodes)
 

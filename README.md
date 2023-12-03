@@ -56,11 +56,11 @@ If you want a black and white version of the generated dependency graph
 
     $ codeviz -n
 
-What if you want a black and white version of the generated dependency
-graph, AND you would like to ignore files that are not including any other header
-in your source files?
+If you would like to ignore source files that are not including the headers you
+specify:
 
-    $ codeviz -m
+    # If a file does not include any of the require*.h headers, it is ignored.
+    $ codeviz require*.h -m
 
 You can specify the name of an output file. The extension will be passed into
 graphviz to generate the appropriate file.
@@ -72,6 +72,7 @@ graphviz to generate the appropriate file.
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported output formats
 
-Finally, can you exclude certain files and directories from being used.
+Finally, can you ignore certain files and directories from being used.
 
-    $ codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h,hpp}   # exclude tests
+    # Ignore tests
+    $ codeviz -r --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
