@@ -10,6 +10,11 @@ import glob
 args = None
 
 
+SOURCE_EXTENSIONS = ('.c', '.cpp')
+HEADER_EXTENSIONS = ('.h', '.hpp')
+EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
+
+
 class RetCode():
     OK, ERROR, ARG, WARNING = range(4)
 
@@ -21,9 +26,9 @@ class Node():
         self.includes  = self.get_includes(filename)
         self.highlight = False
 
-        if filename.endswith('.c') or filename.endswith('.cpp'):
+        if filename.endswith(SOURCE_EXTENSIONS):
             self.filetype = 'source'
-        elif filename.endswith('.h') or filename.endswith('.hpp'):
+        elif filename.endswith(HEADER_EXTENSIONS):
             self.filetype = 'header'
 
     def get_includes(self, filename):
@@ -191,7 +196,7 @@ def create_graphic():
     return retcode
 
 
-def get_files(ext_tpl):
+def get_files():
     '''
     Find all the source/header files in the current directory. Return a
     sorted list of all the found files.
@@ -208,20 +213,14 @@ def get_files(ext_tpl):
         for relpath, dirs, files in os.walk('.'):
             for f in files:
                 full_path = os.path.join(relpath, f).lstrip('./\\')
-                if full_path.endswith(ext_tpl) and full_path not in ignore_lst:
+                if full_path.endswith(EXTENSIONS) \
+                        and full_path not in ignore_lst:
                     files_lst.append(full_path)
+        files_lst = sorted(files_lst)
     else:
-        if args.filenames:
-            # Use the files passed in as arguments
-            files_lst = list(filter( \
-                       lambda d: d.endswith(ext_tpl) and d not in ignore_lst, \
-                       args.filenames))
-        else:
-            # Use only the files in the current working directory
-            files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl) \
-                                                       and f not in ignore_lst]
-
-    files_lst.sort()
+        files = args.filenames or os.listdir('.')
+        t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
+        files_lst = sorted(filter(t, files))
 
     return files_lst
 
@@ -289,9 +288,7 @@ def main():
         print('{} {}'.format('codeviz', meta.__version__))
         return RetCode.OK
 
-    valid_exts = ('.c', '.h', '.cpp', '.hpp')
-
-    files = get_files(valid_exts)
+    files = get_files()
     nodes = get_nodes(files)
     edges = get_edges(nodes)
 
