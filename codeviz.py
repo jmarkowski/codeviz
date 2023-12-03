@@ -286,8 +286,9 @@ def parse_arguments():
 
     parser.add_argument('-H', '--highlight',
         dest='highlight',
+        metavar='PATTERN',
         action='append',
-        help='highlight files matching PATTERN')
+        help='highlight files matching glob PATTERN')
 
     args = parser.parse_args()
 
