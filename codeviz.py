@@ -197,29 +197,29 @@ def get_files(ext_tpl):
     sorted list of all the found files.
     '''
     files_lst = []
-    exclude_lst = []
+    ignore_lst = []
 
-    if args.exclude:
-        for x in args.exclude:
-            exclude_lst.extend(glob.glob(x))
-            print_verbose('Excluded: {}'.format(x))
+    if args.ignore:
+        for x in args.ignore:
+            ignore_lst.extend(glob.glob(x))
+            print_verbose('Ignored: {}'.format(x))
 
     if args.recursive:
         for relpath, dirs, files in os.walk('.'):
             for f in files:
                 full_path = os.path.join(relpath, f).lstrip('./\\')
-                if full_path.endswith(ext_tpl) and full_path not in exclude_lst:
+                if full_path.endswith(ext_tpl) and full_path not in ignore_lst:
                     files_lst.append(full_path)
     else:
         if args.filenames:
             # Use the files passed in as arguments
             files_lst = list(filter( \
-                       lambda d: d.endswith(ext_tpl) and d not in exclude_lst, \
+                       lambda d: d.endswith(ext_tpl) and d not in ignore_lst, \
                        args.filenames))
         else:
             # Use only the files in the current working directory
             files_lst = [f for f in os.listdir('.') if f.endswith(ext_tpl) \
-                                                       and f not in exclude_lst]
+                                                       and f not in ignore_lst]
 
     files_lst.sort()
 
@@ -268,10 +268,10 @@ def parse_arguments():
         action='store_true',
         help='only show nodes whose includes depend on other nodes')
 
-    parser.add_argument('-e', '--exclude',
-        dest='exclude',
+    parser.add_argument('-i', '--ignore',
+        dest='ignore',
         action='append',
-        help='exclude files matching PATTERN')
+        help='ignore files matching PATTERN')
 
     parser.add_argument('-H', '--highlight',
         dest='highlight',

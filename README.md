@@ -72,6 +72,7 @@ graphviz to generate the appropriate file.
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported output formats
 
-Finally, can you exclude certain files and directories from being used.
+Finally, can you ignore certain files and directories from being used.
 
-    $ codeviz -r --exclude=unit-tests/* --exclude=test *.{c,cpp,h,hpp}   # exclude tests
+    # Ignore tests
+    $ codeviz -r --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
