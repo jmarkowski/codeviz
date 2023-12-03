@@ -117,7 +117,12 @@ def get_nodes(files):
         print_verbose(n)
 
         if args.must_include:
-            if not n.includes or not [x for x in n.includes if x in files]:
+            # Skip source files that are missing any of the headers
+            # from the list of header-based files.
+            file_has_no_headers = not n.includes
+            file_header_in_files = bool([h for h in n.includes if h in files])
+
+            if file_has_no_headers or not file_header_in_files:
                 continue
 
         if f in highlight_lst:
