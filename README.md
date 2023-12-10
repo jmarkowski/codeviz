@@ -127,6 +127,10 @@ You can specify the name of an output file with a variety of output formats.
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported file formats.
 
+If you wish to highlight particular files in the graph, you may do so:
+
+    $ codeviz src/ --highlight src/foo*.cpp
+
 
 # Limitations
 
