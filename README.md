@@ -101,7 +101,7 @@ Search directories recursively:
 Ignore certain files and directories from being used:
 
     # Ignore tests
-    $ codeviz --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
+    $ codeviz -r src/ --ignore=src/unit-tests/* --ignore=src/test
 
 Limit the source files to those with certain headers:
 
