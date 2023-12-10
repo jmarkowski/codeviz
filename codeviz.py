@@ -213,15 +213,16 @@ def create_graphic():
     filename = '.'.join(args.outfile.split('.')[:-1])
     fileext  = args.outfile.split('.')[-1]
 
-    cmd = 'dot {}.dot'.format(filename)
+    cmd = f'dot {filename}.dot'
 
     (out_text, retcode) = bash_cmd(cmd)
 
     if retcode:
         return retcode
 
-    cmd = 'neato -Gstart=5 {}.dot -T{} -o {}' \
-                                        .format(filename, fileext, args.outfile)
+    print('Generated dot file: {}.dot'.format(filename))
+
+    cmd = f'neato -Gstart=5 {filename}.dot -T {fileext} -o {args.outfile}'
 
     (out_text, retcode) = bash_cmd(cmd)
 
@@ -229,8 +230,7 @@ def create_graphic():
         print_verbose(out_text)
 
     if not retcode:
-        print('Output dot    : {}.dot'.format(filename))
-        print('Output graphic: {}'.format(args.outfile))
+        print('Generated graph: {}'.format(args.outfile))
 
     return retcode
 
