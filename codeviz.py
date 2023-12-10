@@ -153,6 +153,9 @@ def get_edges(nodes):
 def create_dot_file(nodes, edges):
     filename = '.'.join(args.outfile.split('.')[:-1])
 
+    # Find the node with the longest id length
+    w = len(max(nodes, key=lambda n: len(n.id)).id)
+
     with open('{}.dot'.format(filename), 'wt', encoding='utf-8') as f:
         f.write('digraph codeviz {\n')
         f.write('    splines=true\n') # use splines for arrows
@@ -172,11 +175,11 @@ def create_dot_file(nodes, edges):
                     else:
                         f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(f' {n.id:<20} [label = "{n.filename}"]\n')
+            f.write(f' {n.id:<{w}} [label = "{n.filename}"]\n')
 
         f.write('\n')
         for e in edges:
-            f.write(f'    {e.source_id:<20} -> {e.target_id:>20}\n')
+            f.write(f'    {e.source_id:<{w}} -> {e.target_id}\n')
         f.write('}')
 
 
