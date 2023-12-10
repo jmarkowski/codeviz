@@ -308,10 +308,10 @@ def main():
 
     create_dot_file(nodes, edges)
 
-    retcode = create_graphic()
-
-    return retcode
+    return create_graphic()
 
 
 if __name__ == '__main__':
-    main()
+    retcode = main()
+
+    sys.exit(retcode)
