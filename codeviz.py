@@ -191,7 +191,7 @@ def create_dot_file(nodes, edges):
             if not args.no_color:
                 if n.file.type == 'source':
                     if n.highlight:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
+                        f.write('    node [fillcolor="#ccffcc", style=filled]')
                     else:
                         f.write('    node [fillcolor="#ff9999", style=filled]')
                 elif n.file.type == 'header':
