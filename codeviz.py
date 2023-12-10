@@ -19,23 +19,35 @@ class RetCode():
     OK, ERROR, ARG, WARNING = range(4)
 
 
-class Node():
-    def __init__(self, filename):
-        self.id = f'"{filename}"'
-        self.filename = filename
-        self.highlight = False
+class Error(Exception):
+    pass
 
-        if filename.endswith(SOURCE_EXTENSIONS):
-            self.filetype = 'source'
-        elif filename.endswith(HEADER_EXTENSIONS):
-            self.filetype = 'header'
+
+def print_verbose(string):
+    if args.verbose:
+        print(string)
+
+
+def print_error(error):
+    print(f'ERROR - {error}')
+
+
+class File():
+    def __init__(self, filepath):
+        self.path = filepath
+        self.name = os.path.basename(filepath)
+
+        if filepath.endswith(SOURCE_EXTENSIONS):
+            self.type = 'source'
+        elif filepath.endswith(HEADER_EXTENSIONS):
+            self.type = 'header'
 
         self.included_headers = self._get_included_headers()
 
     def _get_included_headers(self):
         includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
 
-        with open(self.filename, 'rt') as f:
+        with open(self.path, 'rt') as f:
             data = f.read()
 
         # Remove all comments
@@ -44,20 +56,23 @@ class Node():
 
         return includes_re.findall(data)
 
+
+class Node():
+    def __init__(self, filepath):
+        self.id = f'"{filepath}"'
+        self.file = File(filepath)
+        self.highlight = False
+
     def __str__(self):
-        headers = ', '.join(self.included_headers)
-        return f'{self.filename} -> [{headers}]\n'
+        headers = ', '.join(self.file.included_headers)
+        return f'{self.file.name} -> [{headers}]\n'
 
 
 class Edge():
-    def __init__(self, source_node, target_node):
+    def __init__(self, source_node, target_node, collision=False):
         self.source_id = source_node.id
         self.target_id = target_node.id
-
-
-def print_verbose(string):
-    if args.verbose:
-        print(string)
+        self.collision = collision
 
 
 def bash_cmd(cmd):
@@ -70,8 +85,8 @@ def bash_cmd(cmd):
         out_bytes = e.output        # output generated before error
         retcode   = e.returncode
     except FileNotFoundError as e:
-        print('Failed to run command: {}'.format(cmd))
-        print('Install graphviz '
+        print_error('Failed to run command: {}'.format(cmd))
+        print('Install required dependency: graphviz '
               '(http://graphviz.org)')
         retcode = RetCode.ERROR
 
@@ -83,11 +98,14 @@ def bash_cmd(cmd):
     return (out_text, retcode)
 
 
-def find_node(nodes, filename):
+def find_nodes_that_match_basename(nodes, include_path):
+    found_nodes = []
+
     for n in nodes:
-        if n.filename == filename:
-            return n
-    return None
+        if n.file.name == os.path.basename(include_path):
+            found_nodes.append(n)
+
+    return found_nodes
 
 
 def get_highlighted_files():
@@ -113,7 +131,6 @@ def get_nodes(files):
 
     for f in files:
         n = Node(f)
-        print_verbose(n)
 
         if args.must_include:
             # Skip source files that are missing any of the headers
@@ -142,10 +159,18 @@ def get_edges(nodes):
     edges = []
 
     for source in nodes:
-        for h in source.included_headers:
-            header = find_node(nodes, h)
-            if header:
-                edges.append(Edge(source, header))
+        for h in source.file.included_headers:
+            headers = find_nodes_that_match_basename(nodes, h)
+
+            if len(headers) > 1:
+                collisions = ', '.join(map(lambda h: h.file.path, headers))
+                print(f'Warning: Multiple headers with the same basename found for {source.file.path}:')
+                for c in headers:
+                    print(f' - {c.file.path}')
+                    edges.append(Edge(source, c, collision=True))
+
+            elif len(headers) == 1:
+                edges.append(Edge(source, headers[0]))
 
     return edges
 
@@ -164,22 +189,23 @@ def create_dot_file(nodes, edges):
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
         for n in nodes:
             if not args.no_color:
-                if n.filetype == 'source':
+                if n.file.type == 'source':
                     if n.highlight:
                         f.write('    node [fillcolor="#ff9999", style=filled]')
                     else:
                         f.write('    node [fillcolor="#ff9999", style=filled]')
-                elif n.filetype == 'header':
+                elif n.file.type == 'header':
                     if n.highlight:
                         f.write('    node [fillcolor="#ccffcc", style=filled]')
                     else:
                         f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(f' {n.id:<{w}} [label = "{n.filename}"]\n')
+            f.write(f' {n.id:<{w}} [label = "{n.file.path}"]\n')
 
         f.write('\n')
         for e in edges:
-            f.write(f'    {e.source_id:<{w}} -> {e.target_id}\n')
+            attr = ' [style=dotted, label="?"]' if e.collision else ''
+            f.write(f'    {e.source_id:<{w}} -> {e.target_id}{attr}\n')
         f.write('}')
 
 
@@ -209,27 +235,33 @@ def create_graphic():
     return retcode
 
 
-def find_files(ignore_lst):
+def find_files(paths, ignore_lst, recurse=False):
     """
-    Find all the source files in the current directory.
+    Find all the source files for the given paths.
     Return a sorted list of all the found files.
     """
-    files_lst = []
+    files = set()
 
-    if args.recursive:
-        for relpath, dirs, files in os.walk('.'):
-            for f in files:
-                full_path = os.path.join(relpath, f).lstrip('./\\')
-                if full_path.endswith(EXTENSIONS) \
-                        and full_path not in ignore_lst:
-                    files_lst.append(full_path)
-        files_lst = sorted(files_lst)
-    else:
-        files = args.filenames or os.listdir('.')
-        t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
-        files_lst = sorted(filter(t, files))
+    for p in paths:
+        if os.path.isfile(p):
+            files.add(p)
+        elif os.path.isdir(p):
+            if recurse:
+                for relpath, dirs, filenames in os.walk(p):
+                    for f in filenames:
+                        full_path = os.path.join(relpath, f).lstrip('./\\')
+                        if full_path.endswith(EXTENSIONS) \
+                                and full_path not in ignore_lst:
+                            files.add(full_path)
+            else:
+                t = lambda f: f.endswith(EXTENSIONS) and f not in ignore_lst
+                found_files = filter(t, os.listdir(p))
+                full_paths = map(lambda f: os.path.join(p, f), found_files)
+                files.update(full_paths)
+        else:
+            raise Error(f'Invalid file: {p}')
 
-    return files_lst
+    return sorted(files)
 
 
 def get_files_to_ignore(ignore_globs):
@@ -237,8 +269,9 @@ def get_files_to_ignore(ignore_globs):
 
     if ignore_globs:
         for g in ignore_globs:
-            files.update(glob.glob(g))
+            files.update(glob.glob(g, recursive=True))
 
+    if files:
         print_verbose('Ignore files:\n\t{}'.format('\n\t'.join(sorted(files))))
 
     return files
@@ -251,8 +284,8 @@ def parse_arguments():
               description='Generate a code dependency graph for C/C++ projects')
 
     parser.add_argument(
-        dest='filenames',
-        metavar='filename',
+        dest='paths',
+        metavar='path(s)',
         nargs='*')
 
     parser.add_argument('--verbose',
@@ -310,7 +343,9 @@ def main():
         return RetCode.OK
 
     ignore_files = get_files_to_ignore(args.ignore_globs)
-    files = find_files(ignore_files)
+    files = find_files(args.paths, ignore_files, recurse=args.recursive)
+
+    print_verbose('Found files:\n\t{}'.format('\n\t'.join(files)))
 
     nodes = get_nodes(files)
 
@@ -326,6 +361,11 @@ def main():
 
 
 if __name__ == '__main__':
-    retcode = main()
+    retcode = RetCode.ERROR
+
+    try:
+        retcode = main()
+    except Error as e:
+        print_error(e)
 
     sys.exit(retcode)
