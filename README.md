@@ -35,7 +35,25 @@ Once graphviz is installed, ensure that it is available in your environment.
 
 There are a several ways you can install `codeviz`.
 
-### Option A: In a virtual environment with pip
+### Option A: Just copying the script to your executable path
+
+For example, if you have `~/bin` mapped to your environment's path:
+
+    $ git clone https://github.com/jmarkowski/codeviz.git
+    $ cp codeviz/codeviz.py ~/bin/codeviz
+
+### Option B: Using setup
+
+To install `codeviz` into your system path:
+
+    $ git clone https://github.com/jmarkowski/codeviz.git
+    $ cd codeviz
+    $ sudo python3 setup.py install
+
+The generated `install-record.txt` file will list the paths of files that were
+installed on your system.
+
+### Option C: In a virtual environment with pip
 
 First, build the distribution package:
 
@@ -53,24 +71,6 @@ Finally, install the package:
 
 Now, while in the virtual environment, you'll have the `codeviz` command in your
 path.
-
-### Option B: Using setup
-
-To install `codeviz` into your system path:
-
-    $ git clone https://github.com/jmarkowski/codeviz.git
-    $ cd codeviz
-    $ sudo python3 setup.py install
-
-The generated `install-record.txt` file will list the paths of files that were
-installed on your system.
-
-### Option C: Just copying the script to your executable path
-
-For example, if you have `~/bin` mapped to your environment's path:
-
-    $ git clone https://github.com/jmarkowski/codeviz.git
-    $ cp codeviz/codeviz.py ~/bin/codeviz
 
 
 # Example
