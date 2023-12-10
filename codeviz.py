@@ -21,9 +21,8 @@ class RetCode():
 
 class Node():
     def __init__(self, filename):
-        self.name      = '"{}"'.format(filename)
-        self.filename  = filename
-        self.includes  = self.get_includes(filename)
+        self.id = f'"{filename}"'
+        self.filename = filename
         self.highlight = False
 
         if filename.endswith(SOURCE_EXTENSIONS):
@@ -31,29 +30,29 @@ class Node():
         elif filename.endswith(HEADER_EXTENSIONS):
             self.filetype = 'header'
 
-    def get_includes(self, filename):
+        self.included_headers = self._get_included_headers()
+
+    def _get_included_headers(self):
         includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
 
-        with open(filename, 'rt') as f:
+        with open(self.filename, 'rt') as f:
             data = f.read()
 
         # Remove all comments
         data = re.sub(r'/\*.*?\*/', '', data, flags=re.DOTALL)
         data = re.sub(r'//.*', '', data)
 
-        includes = includes_re.findall(data)
-
-        return includes
+        return includes_re.findall(data)
 
     def __str__(self):
-        s = '{:<20s}-> {}'.format(self.filename, ', '.join(self.includes))
-        return s
+        headers = ', '.join(self.included_headers)
+        return f'{self.filename} -> [{headers}]\n'
 
 
 class Edge():
-    def __init__(self, start_node, end_node):
-        self.start = start_node.name
-        self.end = end_node.name
+    def __init__(self, source_node, target_node):
+        self.source_id = source_node.id
+        self.target_id = target_node.id
 
 
 def print_verbose(string):
@@ -119,8 +118,14 @@ def get_nodes(files):
         if args.must_include:
             # Skip source files that are missing any of the headers
             # from the list of header-based files.
-            file_has_no_headers = not n.includes
-            file_header_in_files = bool([h for h in n.includes if h in files])
+            file_has_no_headers = not n.included_headers
+            file_header_in_files = bool(
+                [
+                    h
+                    for h in n.included_headers
+                    if h in files
+                ]
+            )
 
             if file_has_no_headers or not file_header_in_files:
                 continue
@@ -136,17 +141,20 @@ def get_nodes(files):
 def get_edges(nodes):
     edges = []
 
-    for start_node in nodes:
-        for include_file in start_node.includes:
-            end_node = find_node(nodes, include_file)
-            if end_node:
-                edges.append(Edge(start_node, end_node))
+    for source in nodes:
+        for h in source.included_headers:
+            header = find_node(nodes, h)
+            if header:
+                edges.append(Edge(source, header))
 
     return edges
 
 
 def create_dot_file(nodes, edges):
     filename = '.'.join(args.outfile.split('.')[:-1])
+
+    # Find the node with the longest id length
+    w = len(max(nodes, key=lambda n: len(n.id)).id)
 
     with open('{}.dot'.format(filename), 'wt', encoding='utf-8') as f:
         f.write('digraph codeviz {\n')
@@ -167,11 +175,11 @@ def create_dot_file(nodes, edges):
                     else:
                         f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(' {:<20s} [label = "{}"]\n'.format(n.name, n.filename))
+            f.write(f' {n.id:<{w}} [label = "{n.filename}"]\n')
 
         f.write('\n')
         for e in edges:
-            f.write('    {:<20s} -> {:>20s}\n'.format(e.start, e.end))
+            f.write(f'    {e.source_id:<{w}} -> {e.target_id}\n')
         f.write('}')
 
 
@@ -303,15 +311,21 @@ def main():
 
     ignore_files = get_files_to_ignore(args.ignore_globs)
     files = find_files(ignore_files)
+
     nodes = get_nodes(files)
+
+    if len(nodes) == 0:
+        print('No source files found.')
+        return RetCode.WARNING
+
     edges = get_edges(nodes)
 
     create_dot_file(nodes, edges)
 
-    retcode = create_graphic()
-
-    return retcode
+    return create_graphic()
 
 
 if __name__ == '__main__':
-    main()
+    retcode = main()
+
+    sys.exit(retcode)
