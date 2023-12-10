@@ -135,11 +135,11 @@ def get_nodes(files):
         if args.must_include:
             # Skip source files that are missing any of the headers
             # from the list of header-based files.
-            file_has_no_headers = not n.included_headers
+            file_has_no_headers = not n.file.included_headers
             file_header_in_files = bool(
                 [
                     h
-                    for h in n.included_headers
+                    for h in n.file.included_headers
                     if h in files
                 ]
             )

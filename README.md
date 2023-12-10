@@ -1,21 +1,27 @@
 # CodeViz
 
-Visualize code dependencies between files in your __C/C++__ projects.
+Visualize code dependencies in your __C/C++__ projects.
 
-CodeViz is a simple, cross-platform, python3 script that creates a code
-dependency graph using source and header files.
+`codeviz` is a super simple, cross-platform, python script that only uses
+built-in libraries to create code dependency graphs of your source files.
 
-It works by first creating a dot file. The dot file is then then passed into
-graphviz, which is a supporting program that will automagically create a map
-of your code.
+It works like this:
+
+1. Find the source files and parse them to get their headers.
+2. Create a `dot` file that describes the code graph.
+3. Pass the `dot` file into `graphviz`, which will create a visual
+   graphic of your code dependencies.
 
 
 # Installation
 
-`codeviz` requires __graphviz__ installed. Follow the graphviz installation
-instructions for your platform:
+## 1. Install Graphviz
 
-* [Arch Linux](https://www.archlinux.org/packages/extra/x86_64/graphviz/) (AUR)
+`codeviz` uses __graphviz__ to create the visual map.
+
+Follow the graphviz installation instructions for your platform:
+
+* [Arch Linux](https://wiki.archlinux.org/title/Graphviz)
 * [Fedora](http://www.graphviz.org/download)
 * [FreeBSD](https://www.freshports.org/graphics/graphviz)
 * [Mac](http://www.graphviz.org/download)
@@ -24,6 +30,8 @@ instructions for your platform:
 * [Solaris](http://graphviz.org/download)
 
 Once graphviz is installed, ensure that it is available in your environment.
+
+## 2. Install CodeViz
 
 Finally, to install `codeviz` onto your system:
 
@@ -42,25 +50,25 @@ original git source at hash `e83c516`.
 
 # Usage
 
-Run `codeviz` with a path to your source directory. By default, it will
-generate output files in your working directory.
+## General
+
+Run `codeviz` with a path to your source directory to search for source & header
+files in the given path:
 
     $ codeviz path/to/src
 
-:warning: System header files (e.g. _stdio.h_) are ignored.
+Specify multiple code paths, mixing directories and files:
 
-You may also search for source/header files recursively with:
+    $ codeviz path/to/src/subdir1 path/to/src/subdir2 path/to/src/subdir3/*.h
+
+Search directories recursively:
 
     $ codeviz -r path/to/src
 
-⚠️ Because `codeviz` does not know anything about your include paths, there
-may be collisions between connections if there are multiple header files that
-share the same filename despite being in separate directories.
-`codeviz` will warn you if such collisions occur. ⚠️
+Ignore certain files and directories from being used:
 
-If you want a black and white version of the generated dependency graph:
-
-    $ codeviz --no-color path/to/src
+    # Ignore tests
+    $ codeviz --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
 
 If you would like to ignore source files that are not including the headers you
 specify:
@@ -68,16 +76,39 @@ specify:
     # If a file does not include any of the require*.h headers, it is ignored.
     $ codeviz path/to/src path/to/src/required*.h -m
 
-You can specify the name of an output file:
+
+## Style Options
+
+If you want a black and white version of the generated dependency graph:
+
+    $ codeviz --no-color path/to/src
+
+
+## Format Options
+
+You can specify the name of an output file with a variety of output formats.
 
     $ codeviz path/to/src -o jpeg-file.jpg
     $ codeviz path/to/src -o postscript-file.ps
     $ codeviz path/to/src -o png-file.png
 
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
-of supported output formats.
+of supported file formats.
 
-Finally, can you ignore certain files and directories from being used:
 
-    # Ignore tests
-    $ codeviz path/to/src -r --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
+# Limitations
+
+1. System header files (e.g. _stdio.h_) are ignored and not referenced. This is
+   intentional as it's presumed that you only care about dependencies of *your*
+   source code.
+
+2. Because `codeviz` does not know anything about your build system and it's
+   include paths, there may be "dependency collisions" if it finds multiple
+   header files in separate directories that share the same filename.
+   However, `codeviz` will warn you if such collisions occur and still show
+   the dependencies in dotted lines labeled with a `?`. You can resolve these
+   collisions yourself by modifying the contents of the outputted `dot` file.
+
+3. For very, very large codebases, the `graphviz` tool may fail to create the
+   graphic. In such cases, you're better off specifying a smaller subset of
+   paths within the codebase that you're really interested in.
