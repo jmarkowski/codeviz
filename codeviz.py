@@ -171,22 +171,26 @@ def create_dot_file(nodes, edges, output_file, use_colors=True):
         f.write('    sep="+15,15"\n') # min 25 points of margin
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
-        for n in nodes:
-            if use_colors:
-                if n.file.type == 'source':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ccffcc", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
-                elif n.file.type == 'header':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ccffcc", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(f'    {n.id:<{w}} [label = "{n.file.path}"]\n')
+        for n in nodes:
+            node_attr = ''
+
+            if use_colors:
+                if n.highlight:
+                    color = '#ccffcc'
+                elif n.file.type == 'source':
+                    color = '#ff9999'
+                elif n.file.type == 'header':
+                    color = '#ccccff'
+                else:
+                    color = '#ffffff'
+
+                node_attr = f'node [fillcolor="{color}", style=filled] '
+
+            f.write(f'    {node_attr}{n.id:<{w}} [label = "{n.file.path}"]\n')
 
         f.write('\n')
+
         for e in edges:
             attr = ' [style=dotted, label="?"]' if e.collision else ''
             f.write(f'    {e.source_id:<{w}} -> {e.target_id}{attr}\n')
