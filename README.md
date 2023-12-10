@@ -33,11 +33,44 @@ Once graphviz is installed, ensure that it is available in your environment.
 
 ## 2. Install CodeViz
 
-Finally, to install `codeviz` onto your system:
+There are a several ways you can install `codeviz`.
+
+### Option A: In a virtual environment with pip
+
+First, build the distribution package:
+
+    $ git clone https://github.com/jmarkowski/codeviz.git
+    $ python setup.py sdist
+
+Next, create and start a virtual environment:
+
+    $ virtualenv pyenv
+    $ source pyenv/bin/activate
+
+Finally, install the package:
+
+    $ pip install dist/codeviz*
+
+Now, while in the virtual environment, you'll have the `codeviz` command in your
+path.
+
+### Option B: Using setup
+
+To install `codeviz` into your system path:
 
     $ git clone https://github.com/jmarkowski/codeviz.git
     $ cd codeviz
-    $ python3 setup.py install
+    $ sudo python3 setup.py install
+
+The generated `install-record.txt` file will list the paths of files that were
+installed on your system.
+
+### Option C: Just copying the script to your executable path
+
+For example, if you have `~/bin` mapped to your environment's path:
+
+    $ git clone https://github.com/jmarkowski/codeviz.git
+    $ cp codeviz/codeviz.py ~/bin/codeviz
 
 
 # Example
@@ -68,13 +101,12 @@ Search directories recursively:
 Ignore certain files and directories from being used:
 
     # Ignore tests
-    $ codeviz --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
+    $ codeviz -r src/ --ignore=src/unit-tests/* --ignore=src/test
 
-If you would like to ignore source files that are not including the headers you
-specify:
+Limit the source files to those with certain headers:
 
-    # If a file does not include any of the require*.h headers, it is ignored.
-    $ codeviz path/to/src path/to/src/required*.h -m
+    # Any source files that do not include the a.h and b.h headers are ignored.
+    $ codeviz *.cpp a.h b.h --must-include
 
 
 ## Style Options
@@ -94,6 +126,10 @@ You can specify the name of an output file with a variety of output formats.
 
 See [here](http://www.graphviz.org/doc/info/output.html) for a complete list
 of supported file formats.
+
+If you wish to highlight particular files in the graph, you may do so:
+
+    $ codeviz src/ --highlight src/foo*.cpp
 
 
 # Limitations

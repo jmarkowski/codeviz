@@ -7,12 +7,12 @@ import re
 import glob
 
 
-args = None
-
-
 SOURCE_EXTENSIONS = ('.c', '.cpp')
 HEADER_EXTENSIONS = ('.h', '.hpp')
 EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
+
+
+verbose = False
 
 
 class RetCode():
@@ -24,7 +24,9 @@ class Error(Exception):
 
 
 def print_verbose(string):
-    if args.verbose:
+    global verbose
+
+    if verbose:
         print(string)
 
 
@@ -108,31 +110,13 @@ def find_nodes_that_match_basename(nodes, include_path):
     return found_nodes
 
 
-def get_highlighted_files():
-
-    highlight_lst = []
-
-    if args.highlight:
-        for x in args.highlight:
-            highlight_lst = highlight_lst + glob.glob(x)
-
-    for x in highlight_lst:
-        print_verbose('Highlight: %s' % x)
-
-    return highlight_lst
-
-
-def get_nodes(files):
-    global args
-
+def get_nodes(files, highlight_files, force_include=False):
     nodes = []
-
-    highlight_lst = get_highlighted_files()
 
     for f in files:
         n = Node(f)
 
-        if args.must_include:
+        if force_include and n.file.type == 'source':
             # Skip source files that are missing any of the headers
             # from the list of header-based files.
             file_has_no_headers = not n.file.included_headers
@@ -147,7 +131,7 @@ def get_nodes(files):
             if file_has_no_headers or not file_header_in_files:
                 continue
 
-        if f in highlight_lst:
+        if f in highlight_files:
             n.highlight = True
 
         nodes.append(n)
@@ -175,8 +159,8 @@ def get_edges(nodes):
     return edges
 
 
-def create_dot_file(nodes, edges):
-    filename = '.'.join(args.outfile.split('.')[:-1])
+def create_dot_file(nodes, edges, output_file, use_colors=True):
+    filename, _ = os.path.splitext(output_file)
 
     # Find the node with the longest id length
     w = len(max(nodes, key=lambda n: len(n.id)).id)
@@ -187,41 +171,47 @@ def create_dot_file(nodes, edges):
         f.write('    sep="+15,15"\n') # min 25 points of margin
         f.write('    overlap=scalexy\n\n') # scale graph in x/y to stop overlap
         f.write('    node [shape=Mrecord, fontsize=12]\n\n')
-        for n in nodes:
-            if not args.no_color:
-                if n.file.type == 'source':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ff9999", style=filled]')
-                elif n.file.type == 'header':
-                    if n.highlight:
-                        f.write('    node [fillcolor="#ccffcc", style=filled]')
-                    else:
-                        f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(f' {n.id:<{w}} [label = "{n.file.path}"]\n')
+        for n in nodes:
+            node_attr = ''
+
+            if use_colors:
+                if n.highlight:
+                    color = '#ccffcc'
+                elif n.file.type == 'source':
+                    color = '#ff9999'
+                elif n.file.type == 'header':
+                    color = '#ccccff'
+                else:
+                    color = '#ffffff'
+
+                node_attr = f'node [fillcolor="{color}", style=filled] '
+
+            f.write(f'    {node_attr}{n.id:<{w}} [label = "{n.file.path}"]\n')
 
         f.write('\n')
+
         for e in edges:
             attr = ' [style=dotted, label="?"]' if e.collision else ''
             f.write(f'    {e.source_id:<{w}} -> {e.target_id}{attr}\n')
         f.write('}')
 
 
-def create_graphic():
-    filename = '.'.join(args.outfile.split('.')[:-1])
-    fileext  = args.outfile.split('.')[-1]
+def create_graphic(output_file):
+    filename, ext = os.path.splitext(output_file)
 
-    cmd = 'dot {}.dot'.format(filename)
+    ext = ext.lstrip('.')
+
+    cmd = f'dot {filename}.dot'
 
     (out_text, retcode) = bash_cmd(cmd)
 
     if retcode:
         return retcode
 
-    cmd = 'neato -Gstart=5 {}.dot -T{} -o {}' \
-                                        .format(filename, fileext, args.outfile)
+    print('Generated dot file: {}.dot'.format(filename))
+
+    cmd = f'neato -Gstart=5 {filename}.dot -T {ext} -o {output_file}'
 
     (out_text, retcode) = bash_cmd(cmd)
 
@@ -229,8 +219,7 @@ def create_graphic():
         print_verbose(out_text)
 
     if not retcode:
-        print('Output dot    : {}.dot'.format(filename))
-        print('Output graphic: {}'.format(args.outfile))
+        print('Generated graph: {}'.format(output_file))
 
     return retcode
 
@@ -244,7 +233,8 @@ def find_files(paths, ignore_lst, recurse=False):
 
     for p in paths:
         if os.path.isfile(p):
-            files.add(p)
+            if p not in ignore_lst:
+                files.add(p)
         elif os.path.isdir(p):
             if recurse:
                 for relpath, dirs, filenames in os.walk(p):
@@ -264,22 +254,17 @@ def find_files(paths, ignore_lst, recurse=False):
     return sorted(files)
 
 
-def get_files_to_ignore(ignore_globs):
+def get_files_matching_pattern(glob_pattern):
     files = set()
 
-    if ignore_globs:
-        for g in ignore_globs:
+    if glob_pattern:
+        for g in glob_pattern:
             files.update(glob.glob(g, recursive=True))
-
-    if files:
-        print_verbose('Ignore files:\n\t{}'.format('\n\t'.join(sorted(files))))
 
     return files
 
 
 def parse_arguments():
-    global args
-
     parser = argparse.ArgumentParser(
               description='Generate a code dependency graph for C/C++ projects')
 
@@ -326,28 +311,39 @@ def parse_arguments():
         help='ignore files matching glob PATTERN')
 
     parser.add_argument('-H', '--highlight',
-        dest='highlight',
+        dest='highlight_globs',
         metavar='PATTERN',
         action='append',
         help='highlight files matching glob PATTERN')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
 
 def main():
-    parse_arguments()
+    global verbose
+
+    args = parse_arguments()
 
     if args.version:
         import meta
         print('{} {}'.format('codeviz', meta.__version__))
         return RetCode.OK
 
-    ignore_files = get_files_to_ignore(args.ignore_globs)
+    verbose = args.verbose
+
+    ignore_files = get_files_matching_pattern(args.ignore_globs)
+
+    if ignore_files:
+        ignore_files_str = '\n\t'.join(sorted(ignore_files))
+        print_verbose(f'Ignore files:\n\t{ignore_files_str}')
+
     files = find_files(args.paths, ignore_files, recurse=args.recursive)
 
     print_verbose('Found files:\n\t{}'.format('\n\t'.join(files)))
 
-    nodes = get_nodes(files)
+    highlight_files = get_files_matching_pattern(args.highlight_globs)
+
+    nodes = get_nodes(files, highlight_files, force_include=args.must_include)
 
     if len(nodes) == 0:
         print('No source files found.')
@@ -355,9 +351,9 @@ def main():
 
     edges = get_edges(nodes)
 
-    create_dot_file(nodes, edges)
+    create_dot_file(nodes, edges, args.outfile, use_colors=not args.no_color)
 
-    return create_graphic()
+    return create_graphic(args.outfile)
 
 
 if __name__ == '__main__':
