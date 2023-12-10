@@ -20,14 +20,15 @@ class RetCode():
 
 
 class Node():
-    def __init__(self, filename):
-        self.id = f'"{filename}"'
-        self.filename = filename
+    def __init__(self, filepath):
+        self.id = f'"{filepath}"'
+        self.filepath = filepath
+        self.filename = os.path.basename(filepath)
         self.highlight = False
 
-        if filename.endswith(SOURCE_EXTENSIONS):
+        if self.filename.endswith(SOURCE_EXTENSIONS):
             self.filetype = 'source'
-        elif filename.endswith(HEADER_EXTENSIONS):
+        elif self.filename.endswith(HEADER_EXTENSIONS):
             self.filetype = 'header'
 
         self.included_headers = self._get_included_headers()
@@ -35,7 +36,7 @@ class Node():
     def _get_included_headers(self):
         includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
 
-        with open(self.filename, 'rt') as f:
+        with open(self.filepath, 'rt') as f:
             data = f.read()
 
         # Remove all comments
@@ -50,9 +51,10 @@ class Node():
 
 
 class Edge():
-    def __init__(self, source_node, target_node):
+    def __init__(self, source_node, target_node, collision=False):
         self.source_id = source_node.id
         self.target_id = target_node.id
+        self.collision = collision
 
 
 def print_verbose(string):
@@ -83,11 +85,14 @@ def bash_cmd(cmd):
     return (out_text, retcode)
 
 
-def find_node(nodes, filename):
+def find_nodes_that_match_basename(nodes, include_path):
+    found_nodes = []
+
     for n in nodes:
-        if n.filename == filename:
-            return n
-    return None
+        if n.filename == os.path.basename(include_path):
+            found_nodes.append(n)
+
+    return found_nodes
 
 
 def get_highlighted_files():
@@ -143,9 +148,17 @@ def get_edges(nodes):
 
     for source in nodes:
         for h in source.included_headers:
-            header = find_node(nodes, h)
-            if header:
-                edges.append(Edge(source, header))
+            headers = find_nodes_that_match_basename(nodes, h)
+
+            if len(headers) > 1:
+                collisions = ', '.join(map(lambda h: h.filepath, headers))
+                print(f'Warning: Multiple headers with the same basename found for {source.filepath}:')
+                for c in headers:
+                    print(f' - {c.filepath}')
+                    edges.append(Edge(source, c, collision=True))
+
+            elif len(headers) == 1:
+                edges.append(Edge(source, headers[0]))
 
     return edges
 
@@ -175,11 +188,12 @@ def create_dot_file(nodes, edges):
                     else:
                         f.write('    node [fillcolor="#ccccff", style=filled]')
 
-            f.write(f' {n.id:<{w}} [label = "{n.filename}"]\n')
+            f.write(f' {n.id:<{w}} [label = "{n.filepath}"]\n')
 
         f.write('\n')
         for e in edges:
-            f.write(f'    {e.source_id:<{w}} -> {e.target_id}\n')
+            attr = ' [style=dotted, label="?"]' if e.collision else ''
+            f.write(f'    {e.source_id:<{w}} -> {e.target_id}{attr}\n')
         f.write('}')
 
 

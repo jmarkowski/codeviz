@@ -52,6 +52,11 @@ You may also search for source/header files recursively as so
 
     $ codeviz -r
 
+⚠️ Because `codeviz` does not know anything about your include paths, there
+may be collisions between connections if there are multiple header files that
+share the same filename despite being in separate directories.
+`codeviz` will warn you if such collisions occur. ⚠️
+
 If you want a black and white version of the generated dependency graph
 
     $ codeviz -n
