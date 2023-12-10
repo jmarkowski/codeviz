@@ -303,7 +303,13 @@ def main():
 
     ignore_files = get_files_to_ignore(args.ignore_globs)
     files = find_files(ignore_files)
+
     nodes = get_nodes(files)
+
+    if len(nodes) == 0:
+        print('No source files found.')
+        return RetCode.WARNING
+
     edges = get_edges(nodes)
 
     create_dot_file(nodes, edges)
