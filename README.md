@@ -103,11 +103,10 @@ Ignore certain files and directories from being used:
     # Ignore tests
     $ codeviz --ignore=unit-tests/* --ignore=test *.{c,cpp,h,hpp}
 
-If you would like to ignore source files that are not including the headers you
-specify:
+Limit the source files to those with certain headers:
 
-    # If a file does not include any of the require*.h headers, it is ignored.
-    $ codeviz path/to/src path/to/src/required*.h -m
+    # Any source files that do not include the a.h and b.h headers are ignored.
+    $ codeviz *.cpp a.h b.h --must-include
 
 
 ## Style Options
