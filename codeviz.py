@@ -80,8 +80,8 @@ def bash_cmd(cmd):
         out_bytes = e.output        # output generated before error
         retcode   = e.returncode
     except FileNotFoundError as e:
-        print('Failed to run command: {}'.format(cmd))
-        print('Install graphviz '
+        print_error('Failed to run command: {}'.format(cmd))
+        print('Install required dependency: graphviz '
               '(http://graphviz.org)')
         retcode = RetCode.ERROR
 
