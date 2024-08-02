@@ -8,7 +8,7 @@ import glob
 
 
 SOURCE_EXTENSIONS = ('.c', '.cpp', '.cc', '.c++', '.cxx', '.C')
-HEADER_EXTENSIONS = ('.h', '.hpp', '.hcc', '.hh', '.h++', '.hxx', '.H')
+HEADER_EXTENSIONS = ('.h', '.hpp', '.hcc', '.tcc', '.hh', '.h++', '.hxx', '.H')
 EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
 
 
