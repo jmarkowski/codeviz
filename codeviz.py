@@ -7,8 +7,8 @@ import re
 import glob
 
 
-SOURCE_EXTENSIONS = ('.c', '.cpp')
-HEADER_EXTENSIONS = ('.h', '.hpp')
+SOURCE_EXTENSIONS = ('.c', '.cpp', '.cc', '.c++', '.cxx', '.C')
+HEADER_EXTENSIONS = ('.h', '.hpp', '.hcc', '.hh', '.h++', '.hxx', '.H')
 EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
 
 
