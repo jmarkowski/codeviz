@@ -7,8 +7,8 @@ import re
 import glob
 
 
-SOURCE_EXTENSIONS = ('.c', '.cpp')
-HEADER_EXTENSIONS = ('.h', '.hpp')
+SOURCE_EXTENSIONS = ('.c', '.cpp', '.cc', '.c++', '.cxx', '.C')
+HEADER_EXTENSIONS = ('.h', '.hpp', '.hcc', '.tcc', '.hh', '.h++', '.hxx', '.H')
 EXTENSIONS = SOURCE_EXTENSIONS + HEADER_EXTENSIONS
 
 
@@ -47,7 +47,7 @@ class File():
         self.included_headers = self._get_included_headers()
 
     def _get_included_headers(self):
-        includes_re = re.compile(r'\s*#\s*include\s+["<](?P<file>.+?)[">]')
+        includes_re = re.compile(r'\s*#\s*include\s*["<](?P<file>.+?)[">]')
 
         with open(self.path, 'rt') as f:
             data = f.read()
